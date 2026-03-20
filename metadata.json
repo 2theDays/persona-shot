@@ -1,0 +1,7 @@
+{
+  "name": "ProPhoto AI Resume Studio",
+  "description": "Transform your casual photos into professional, studio-quality resume portraits using Gemini AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

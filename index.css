@@ -1,0 +1,48 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --premium-gold: #fbbf24;
+  --premium-blue: #3b82f6;
+  --premium-purple: #8b5cf6;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100;
+  background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+  min-height: 100vh;
+}
+
+.glass-card {
+  @apply backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.text-gradient {
+  @apply bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent opacity-100;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Custom styles for react-easy-crop */
+.reactEasyCrop_Container {
+  @apply rounded-3xl !important;
+}
