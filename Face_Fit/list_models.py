@@ -1,6 +1,6 @@
 import requests
 import os
-url = "https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyBQV-fKsLZhUkasadWTXsFdQyJ5X23Wojw"
+url = "https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_API_KEY_HERE"
 response = requests.get(url)
 data = response.json()
 with open('models_list.txt', 'w') as f:
