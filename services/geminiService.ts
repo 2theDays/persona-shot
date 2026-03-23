@@ -7,7 +7,6 @@ const API_KEY = (import.meta as any).env?.VITE_GEMINI_API_KEY || (process.env as
 
 export const analyzeImage = async (base64Image: string, mimeType: string): Promise<AIAnalysis> => {
   const ai = new GoogleGenAI({ apiKey: API_KEY });
-  const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
     Analyze this portrait photo for a professional career profile. 
@@ -29,23 +28,21 @@ export const analyzeImage = async (base64Image: string, mimeType: string): Promi
   `;
 
   try {
-    const response = await model.generateContent({
-      contents: [{
-        role: "user",
-        parts: [
-          { text: prompt },
-          { inlineData: { mimeType, data: base64Image } }
-        ]
-      }],
-      generationConfig: {
-        responseMimeType: "application/json"
-      }
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [
+        { text: prompt },
+        { inlineData: { mimeType, data: base64Image } }
+      ],
+      config: {
+        responseMimeType: 'application/json',
+      },
     });
 
-    return JSON.parse(response.response.text());
-  } catch (error) {
+    return JSON.parse(response.text ?? '{}');
+  } catch (error: any) {
     console.error("Analysis Error:", error);
-    throw new Error("Failed to analyze photo.");
+    throw new Error(`Failed to analyze photo: ${error?.message || 'Unknown error'}`);
   }
 };
 
@@ -111,16 +108,17 @@ export const transformToPersonaSet = async (
     const results = await Promise.all(personas.map(async (p) => {
       const response: GenerateContentResponse = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
-        contents: {
-          parts: [
-            { inlineData: { data: base64Image, mimeType: mimeType } },
-            { text: p.prompt },
-          ],
+        contents: [
+          { inlineData: { data: base64Image, mimeType: mimeType } },
+          { text: p.prompt },
+        ],
+        config: {
+          responseModalities: ['Image', 'Text'],
         },
       });
 
       const candidate = response.candidates?.[0];
-      const imagePart = candidate?.content?.parts?.find(p => p.inlineData);
+      const imagePart = candidate?.content?.parts?.find(part => part.inlineData);
       
       if (imagePart?.inlineData) {
         return {
@@ -130,13 +128,14 @@ export const transformToPersonaSet = async (
           url: `data:image/png;base64,${imagePart.inlineData.data}`
         };
       }
-      throw new Error(`Failed to generate ${p.label}`);
+      throw new Error(`Failed to generate ${p.label}: No image in response`);
     }));
 
     return results;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Persona Set Error:", error);
-    throw new Error("AI Persona set generation failed.");
+    const detail = error?.message || error?.toString() || 'Unknown error';
+    throw new Error(`AI Persona set generation failed: ${detail}`);
   }
 };
 
@@ -193,24 +192,25 @@ export const transformToProfessionalPhoto = async (
   try {
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [
-          { inlineData: { data: base64Image, mimeType: mimeType } },
-          { text: prompt },
-        ],
+      contents: [
+        { inlineData: { data: base64Image, mimeType: mimeType } },
+        { text: prompt },
+      ],
+      config: {
+        responseModalities: ['Image', 'Text'],
       },
     });
 
     const candidate = response.candidates?.[0];
-    const imagePart = candidate?.content?.parts?.find(p => p.inlineData);
+    const imagePart = candidate?.content?.parts?.find(part => part.inlineData);
     
     if (imagePart?.inlineData) {
       return `data:image/png;base64,${imagePart.inlineData.data}`;
     }
 
     throw new Error("No image data found in response.");
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Error:", error);
-    throw new Error("AI Transformation failed.");
+    throw new Error(`AI Transformation failed: ${error?.message || 'Unknown error'}`);
   }
 };
